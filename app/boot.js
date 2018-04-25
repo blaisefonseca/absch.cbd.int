@@ -26,7 +26,7 @@ require.config({
         'lodash'                    : 'libs/lodash/lodash.min',
         'moment'                    : 'libs/momentjs/min/moment-with-langs.min',
         'angular-animate'           : 'libs/angular-animate/angular-animate.min',
-        'view-abs-checkpoint'       : 'views/forms/view/view-abs-checkpoint.directive',
+        'view-abs-checkpoint'       : 'views/forms/view/abs/view-abs-checkpoint.directive',
         'text-angular-sanitize'     : 'libs/textAngular/dist/textAngular-sanitize.min',
         'text-angular'              : 'libs/textAngular/src/textAngular',
         'cbd-forums'                : 'libs/cbd-forums/cbd-forums',
@@ -106,13 +106,6 @@ require.config({
         'pdfjs-dist/build/pdf'          : { 'deps': ['angular']}, 
         'pdf-object'                    : { 'deps': ['angular']}  
     },
-    packages: [
-        { name: 'scbd-branding'          , location : 'components/scbd-branding' },
-        { name: 'scbd-angularjs-controls', location : 'components/scbd-angularjs-controls/form-control-directives', main : 'all-controls.js' },
-        { name: 'scbd-angularjs-services', location : 'components/scbd-angularjs-services/services' },
-        { name: 'scbd-angularjs-filters',  location : 'components/scbd-angularjs-services/filters' },
-        { name: 'ammap', main: 'ammap',    location : 'libs/ammap3/ammap' }
-    ],
     urlArgs: function(id, url){
         
         if(url.indexOf('worldEUHigh.js')>0)

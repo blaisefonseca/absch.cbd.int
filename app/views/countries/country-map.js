@@ -1,8 +1,8 @@
-define(['require', 'text!./country-map.html', 'app', 'lodash',  'ammap', 
-'shim!/app/views/countries/worldEUHigh[ammap].js',//using absolute url, spl case for this file as its too big to load
-'shim!ammap/themes/light[ammap]',
+define(['require', 'text!./country-map.html', 'app', 'lodash',  'libs/ammap3/ammap/ammap', 
+'shim!/app/views/countries/worldEUHigh[libs/ammap3/ammap/ammap].js',//using absolute url, spl case for this file as its too big to load
+'shim!libs/ammap3/ammap/themes/light[libs/ammap3/ammap/ammap]',
 'js/common', 'services/search-service', 'css!libs/flag-icon-css/css/flag-icon.min.css',
-'scbd-angularjs-services/locale'], 
+'components/scbd-angularjs-services/services/locale'], 
 function(require, template, app, _) {
   'use strict';
 
@@ -598,12 +598,12 @@ function(require, template, app, _) {
             // $scope.map.removeListener($scope.map, "click", closePopovers);
             $scope.map.validateData();
             if(!$scope.lmos){
-              $scope.lmos = [{identifier:'all', title:{en:'All'}},
-                            {identifier:'MON-877Ø1-2', title:{en:'MON-877Ø1-2'}},
-                            {identifier:'KM-ØØØH71-4', title:{en:'KM-ØØØH71-4'}},
-                            {identifier:'DKB-89614-9', title:{en:'DKB-89614-9'}},
-                            {identifier:'MON-ØØ81Ø-6', title:{en:'MON-ØØ81Ø-6'}}
-                          ];
+              $q.when($http.get('/api/v2013/lmos', { params: {q:{uniqueIdentification : { $exists : true}}, f:{uniqueIdentification:1}, s:{uniqueIdentification:1}}}))
+                .then(function(result){
+                  $scope.lmos = _.map(result.data, function(lmo){ return {identifier: lmo.uniqueIdentification, title: lmo.uniqueIdentification}});                  
+                  $scope.lmos.unshift({identifier:'all', title:'All'});
+                })
+              
             }
             if($scope.options.lmo!='all')
               $scope.options.lmo = 'all'
