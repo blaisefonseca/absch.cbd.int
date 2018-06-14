@@ -19,7 +19,6 @@ jobs:
       - run:
           name: run docker test
           command:  |
-            docker run -d -p 8001:8000 output;
+            docker run --n absch -d -p 8001:8000 output;
             sleep 10;
-            apk update && apk add curl curl-dev bash;
-            curl --retry 10 --retry-delay 5 -v http://localhost:8001/
+            docker exec absch curl --retry 10 --retry-delay 5 -v http://localhost:8001/
