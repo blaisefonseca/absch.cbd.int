@@ -1,7 +1,7 @@
 FROM node:8.4.0
 # -alpine
-RUN apk update && apk upgrade && \
- apk add --no-cache bash git
+# RUN apk update && apk upgrade && \
+#     apk add --no-cache bash git
 
 ARG BRANCH='master'
 ENV BRANCH $BRANCH
