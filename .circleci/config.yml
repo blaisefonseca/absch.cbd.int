@@ -1,0 +1,25 @@
+version: 2
+
+jobs:
+  build:
+    docker:
+      - image: docker:17.05.0-ce
+      - image: ruby:2.4.0
+    working_directory: ~/scbd/absch.cbd.int
+    # parallelism: 1
+    # shell: /bin/bash --login
+    steps:
+      - checkout
+      - setup_remote_docker
+      - run:
+          name: Install dockr client
+          command: |
+            docker info
+            docker build -t output --build-arg VERSION=$CIRCLE_SHA1 --build-arg BRANCH=${CIRCLE_BRANCH:-master} --build-arg TAG=$CIRCLE_TAG .
+      - run:
+          name: run docker test
+          command:  |
+            docker run -d -p 8001:8000 output;
+            sleep 10;
+            apk update && apk add curl curl-dev bash;
+            curl --retry 10 --retry-delay 5 -v http://localhost:8001/
