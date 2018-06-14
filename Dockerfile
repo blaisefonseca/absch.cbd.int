@@ -12,7 +12,7 @@ ENV VERSION $VERSION
 RUN echo 'running on branch ' $VERSION
 
 # clone primary repo
-RUN git clone -n https://github.com/scbd/absch.cbd.int.git /usr/tmp/i18n/en
+RUN git clone -n https://github.com/blaisefonseca/absch.cbd.int.git /usr/tmp/i18n/en
 
 WORKDIR /usr/tmp/i18n/en
 # RUN git reset --hard $VERSION
