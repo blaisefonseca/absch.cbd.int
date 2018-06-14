@@ -15,7 +15,7 @@ RUN echo 'running on branch ' $VERSION
 RUN git clone -n https://github.com/scbd/absch.cbd.int.git /usr/tmp/i18n/en
 
 WORKDIR /usr/tmp/i18n/en
-RUN git checkout $VERSION
+RUN git checkout -f $VERSION
 
 COPY i18n.sh ./
 RUN chmod 700 i18n.sh
