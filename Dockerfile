@@ -15,6 +15,7 @@ RUN echo 'running on branch ' $VERSION
 RUN git clone -n https://github.com/scbd/absch.cbd.int.git /usr/tmp/i18n/en
 
 WORKDIR /usr/tmp/i18n/en
+RUN git reset --hard $VERSION
 RUN git checkout -f $VERSION
 
 COPY i18n.sh ./
