@@ -3,24 +3,83 @@ version: 2
 jobs:
   build:
     docker:
-      - image: docker:18.03.1-ce-git
-      # - image: ruby:2.4.0
+      - image: docker:17.05.0-ce
     working_directory: ~/scbd/absch.cbd.int
-    # parallelism: 1
-    # shell: /bin/bash --login
+    parallelism: 1
     steps:
       - checkout
       - setup_remote_docker
       - run:
           name: Install dockr client
           command: |
-           eval "echo Branch:"{$CIRCLE_BRANCH}" User:"{$CIRCLE_PROJECT_USERNAME}
+            eval "echo Branch:"{$CIRCLE_BRANCH}" User:"{$CIRCLE_PROJECT_USERNAME}
             docker info
             docker build -t output --build-arg VERSION=$CIRCLE_SHA1 --build-arg BRANCH=${CIRCLE_BRANCH:-master} --build-arg TAG=$CIRCLE_TAG .
       - run:
-          name: run docker test
+          name: test docker image
           command:  |
             docker run --name absch -d -p 8000:8000 output;
             sleep 10;
-            docker exec absch curl --retry 10 --retry-delay 5 -v http://localhost:8000/
-        # apk update && apk add curl curl-dev bash;
+            # docker exec absch curl --retry 10 --retry-delay 5 -v http://localhost:8000/
+  build-deploy-branches:
+    docker:
+      - image: docker:17.05.0-ce
+    working_directory: ~/scbd/absch.cbd.int
+    steps:
+      - run:
+        name: build and deploy branches
+        command:  |
+          eval "echo Branch:"{$CIRCLE_BRANCH}" User:"{$CIRCLE_PROJECT_USERNAME}
+          docker login -e $DOCKER_EMAIL -u $DOCKER_USER -p $DOCKER_PASS
+          docker tag output scbd/$CIRCLE_PROJECT_REPONAME:$CIRCLE_BRANCH
+          docker push scbd/$CIRCLE_PROJECT_REPONAME:$CIRCLE_BRANCH
+  build_and_deploy_releases:
+    machine:
+        enabled: true
+    working_directory: ~/scbd/absch.cbd.int
+    steps:
+      - checkout
+      - run:
+          name: build and deploy branches
+          command:  |
+            docker login -e $DOCKER_EMAIL -u $DOCKER_USER -p $DOCKER_PASS
+            docker tag output scbd/$CIRCLE_PROJECT_REPONAME:$CIRCLE_BRANCH
+            docker push scbd/$CIRCLE_PROJECT_REPONAME:$CIRCLE_BRANCH
+  build_and_deploy_tags:
+    machine:
+        enabled: true
+    working_directory: ~/scbd/absch.cbd.int
+    steps:
+      - checkout
+      - run:
+          name: build and deploy branches
+          command:  |
+            docker login -e $DOCKER_EMAIL -u $DOCKER_USER -p $DOCKER_PASS
+            docker tag output scbd/$CIRCLE_PROJECT_REPONAME:$CIRCLE_BRANCH
+            docker push scbd/$CIRCLE_PROJECT_REPONAME:$CIRCLE_BRANCH
+
+workflows:
+  version: 2
+  build_and_deploy:
+    jobs:
+      - build
+      - build-deploy-branches:
+          requires:
+            - build
+          filters:
+            branches:
+              only: 'dev'
+      - build_and_deploy_releases:
+          requires:
+            - build
+          filters:
+              branches:
+                  only:
+                    - /^release\/.*/
+      - build_and_deploy_tags:
+          requires:
+            - build
+          filters:
+              branches:
+                  only:
+                    - /^v?[0-9]+(\.[0-9]+)*$/
