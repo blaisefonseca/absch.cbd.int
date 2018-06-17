@@ -68,7 +68,7 @@ workflows:
             - build
           filters:
             branches:
-              only: 'dev'
+              only: /^(master|dev|stg)$/
       - build_and_deploy_releases:
           requires:
             - build
