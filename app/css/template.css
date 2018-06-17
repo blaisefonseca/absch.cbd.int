@@ -95,10 +95,6 @@ background-color: white;
     background-color: #428bca!important;
 }
 
-.nav> li> a {
-    padding-top: 6px;
-}
-
 .badge-notify {
     background: red;
     position: relative;
@@ -397,7 +393,7 @@ body {
     font-family: "Helvetica Neue", Helvetica, sans-serif, Trebuchet MS;
     text-rendering: optimizeLegibility;
     font-size: 14px;
-    background-color: #eee!important;
+    background-color: #eee;
     color: #555;
     position: relative;
 }
@@ -1993,4 +1989,18 @@ legend+ .help-info {
 .fa-bell:before {
     float: right;
     padding-right: 5px;
+}
+
+.animate-if.ng-enter, .animate-if.ng-leave {
+    transition:all cubic-bezier(0.250, 0.460, 0.450, 0.940) 0.5s;
+}
+
+.animate-if.ng-enter,
+.animate-if.ng-leave.ng-leave-active {
+    opacity:0;
+}
+
+.animate-if.ng-leave,
+.animate-if.ng-enter.ng-enter-active {
+    opacity:1;
 }

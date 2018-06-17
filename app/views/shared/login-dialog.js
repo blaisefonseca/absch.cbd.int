@@ -1,6 +1,5 @@
-define(['app',
-		'scbd-branding/directives/header/login'
-        ], function (app, moment) {
+define(['jquery', 'components/scbd-branding/directives/header/login'
+], function ($) {
 
     return ["$scope", "$location", function ($scope, $location){
 

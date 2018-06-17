@@ -1,5 +1,5 @@
-define(['app', 'moment', 'json!./schema-name.json', 'json!./schema-short-name.json', 'scbd-angularjs-services/locale'], 
-function (app, moment, schemaName, schemaShortName) {
+define(['app', 'lodash', 'moment', 'json!./schema-name.json', 'json!./schema-short-name.json', 'components/scbd-angularjs-services/services/locale'], 
+function (app, _, moment, schemaName, schemaShortName) {
 
 
   app.directive("translationUrl", ['$browser', function($browser){
@@ -222,7 +222,7 @@ function (app, moment, schemaName, schemaShortName) {
   //
   //
   //============================================================
-  app.filter("term", ["$http", '$filter', 'locale', function ($http, $filter, appLocale) {
+  app.filter("term", ["$http", '$filter', 'locale', function ($http, $filter, websiteLocale) {
     var cacheMap = {};
 
     return function (term, locale) {
@@ -234,8 +234,10 @@ function (app, moment, schemaName, schemaShortName) {
         term = {
           identifier: term
         };
-
-      locale = locale || appLocale || "en";
+      
+      if(locale && _.isArray(locale))
+        locale = websiteLocale;
+      locale = locale || "en";
 
       if (term.customValue)
         return $filter("lstring")(term.customValue, locale);
@@ -253,14 +255,13 @@ function (app, moment, schemaName, schemaShortName) {
 
       }).catch(function () {
 
-        cacheMap[term.identifier] = { title : term.identifier };
+        cacheMap[term.identifier] = term.identifier;
 
         return term.identifier;
 
       });
     };
   }]);
-
 
   app.filter("lstring", function () {
     return function (ltext, locale) {
@@ -279,6 +280,11 @@ function (app, moment, schemaName, schemaShortName) {
         sText = ltext.en;
 
       if (!sText) {
+
+        var normalized = normalizeText(ltext)
+        if(normalized[locale])
+          return normalized[locale];
+
         for (var key in ltext) {
           sText = ltext[key];
           if (sText)
@@ -290,16 +296,20 @@ function (app, moment, schemaName, schemaShortName) {
     };
   });
 
+
   //============================================================
   //
   //
   //
   //============================================================
-  app.filter("schemaName", [function() {
+  app.filter("schemaName", ['realm', 'locale', function(realm, locale) {
+    
 		return function( schema ) {
 			if(!schema)return schema;
+      
+      var result = ((realm.schemas[schema]||{}).title||{})[locale];
 
-      return schemaName[schema.toLowerCase()] || schema;
+      return result || schemaName[schema.toLowerCase()] || schema;//legacy
 
 		};
 	}]);
@@ -309,14 +319,16 @@ function (app, moment, schemaName, schemaShortName) {
 	//
 	//
 	//============================================================
-	app.filter("schemaShortName", [function() {
+	app.filter("schemaShortName", ['realm', function(realm) {
 
 		return function( schema ) {
 
 			if(!schema)
 				return schema;
 
-      return schemaShortName[schema.toLowerCase()] || schema;
+        var result = (realm.schemas[schema]||{}).shortCode;
+
+        return result || schema;
 
 		};
 	}]);
@@ -326,12 +338,16 @@ function (app, moment, schemaName, schemaShortName) {
 	//
 	//
 	//============================================================
-	app.filter("urlSchemaShortName", [function() {
+	app.filter("urlSchemaShortName", ['realm', function(realm) {
 
 		return function( schema ) {
 
 			if(!schema)
 				return schema;
+      
+      var shortCode = (realm.schemas[schema]||{}).shortCode;
+      if(shortCode)
+        return shortCode;
 
 			if(schema.toLowerCase()=="focalpoint"				          ) return "NFP";
 			if(schema.toLowerCase()=="authority"				          ) return "CNA";
@@ -366,11 +382,15 @@ function (app, moment, schemaName, schemaShortName) {
 	//
 	//
 	//============================================================
-	app.filter("mapSchema", [function() {
+	app.filter("mapSchema", ['realm', function(realm) {
 
 		return function( schema ) {
 			if(!schema)
 				return schema;
+
+      var realmSchema = _.findKey(realm.schemas, {shortCode: schema.toUpperCase()})
+      if(realmSchema)
+        return realmSchema;
 
 			if(schema.toUpperCase()=="NEW"				      ) return "new";
 			if(schema.toUpperCase()=="NEWS"				      ) return "news";
@@ -400,4 +420,78 @@ function (app, moment, schemaName, schemaShortName) {
 		};
 	}]);
 
+
+  app.filter("lstringLocale", ['locale', function(defaultLocale) {
+    return function(ltext, locale) {
+      
+      if(locale && _.isArray(locale))
+        locale = defaultLocale;
+
+      locale = locale || defaultLocale;
+
+      if(!ltext)
+        return locale;
+
+      if(typeof(ltext) == 'string')
+        return locale;
+
+      if(ltext[locale])
+        return locale;
+
+      if(ltext[defaultLocale])
+              return defaultLocale;
+
+      if(ltext.en)
+        return 'en';
+      
+      if(ltext.fr) return 'fr';
+      if(ltext.es) return 'es';
+      if(ltext.ru) return 'ru';
+      if(ltext.ar) return 'ar';
+      if(ltext.zh) return 'zh';
+
+      for(var key in ltext) {
+        if(ltext[key])
+            return key;
+      }
+
+      return locale;
+    };
+  }]);
+
+  app.filter("direction", ['$filter', function($filter) {
+    return function(text, locale) {
+
+          locale = $filter('lstringLocale')(text, locale);
+
+          return $filter('localeDirection')(locale);
+    };
+  }]);
+
+  app.filter("localeDirection", ['locale', function(defaultLocale) {
+    return function(locale) {
+          return (locale||defaultLocale) == 'ar' ? 'rtl' : 'ltr';
+      };
+  }]);
+
+  function normalizeText(text) {
+
+		if(!text) return null;
+
+		var entry = { ar: text.ar, en: text.en, es: text.es, fr: text.fr, ru: text.ru, zh: text.zh };
+
+		if(!entry.en) entry.en = entry.fr;
+		if(!entry.en) entry.en = entry.es;
+		if(!entry.en) entry.en = entry.ru;
+		if(!entry.en) entry.en = entry.ar;
+		if(!entry.en) entry.en = entry.zh;
+
+		if(!entry.fr) entry.fr = entry.en;
+		if(!entry.es) entry.es = entry.en;
+		if(!entry.ru) entry.ru = entry.en;
+		if(!entry.ar) entry.ar = entry.en;
+		if(!entry.zh) entry.zh = entry.en;
+
+    return entry;
+  }
 });

@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en" app-version="<%=appVersion%>">
+
+<head>
+    <base href="<%=baseUrl%>">
+    <meta charset="utf-8">
+    <title>Access and Benefit-Sharing Clearing-House</title>
+    <meta name="description" content="Access and Benefit-Sharing Clearing-House">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <link rel="shortcut icon" href="/app/img/favicon.png">
+
+    <!-- Bootstrap core CSS -->
+    <link rel="stylesheet" type="text/css" href="/app/libs/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+
+    <!-- Custom styles for this template -->
+    <link rel="stylesheet" type="text/css" href="/app/css/template.css">
+
+
+    <!--[if lt IE 9]><script src="../../docs-assets/js/ie8-responsive-file-warning.js"></script><![endif]-->
+    <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+      <script src="https://oss.maxcdn.com/libs/respond.js/1.3.0/respond.min.js"></script>
+    <![endif]-->
+
+</head>
+<body ng-controller="TemplateController" id="top" lang="{{lang}}">
+    <span id="appBaseUrl" style="display:none"><%=baseUrl%></span>
+    <div class="m-app-loading" ng-animate-children>
+        <!--
+            HACKY CODE WARNING: I'm putting Style block inside directive so that it
+            will be removed from the DOM when we remove the directive container.
+        -->
+        <style type="text/css">
+            div.m-app-loading {
+                position: fixed ;
+            }
+            div.m-app-loading div.animated-container {
+                background-color: #FFFFFF ;
+                bottom: 0px ;
+                left: 0px ;
+                opacity: 1.0 ;
+                position: fixed ;
+                right: 0px ;
+                top: 0px ;
+                z-index: 999999 ;
+            }
+            /* Used to initialize the ng-leave animation state. */
+            div.m-app-loading div.animated-container.ng-leave {
+                opacity: 1.0 ;
+                transition: all linear 200ms ;
+                    -webkit-transition: all linear 200ms ;
+            }
+            /* Used to set the end properties of the ng-leave animation state. */
+            div.m-app-loading div.animated-container.ng-leave-active {
+                opacity: 0 ;
+            }
+            div.m-app-loading div.messaging {
+                color: #1FA65D ;
+                font-family: monospace ;
+                left: 0px ;
+                margin-top: -37px ;
+                position: absolute ;
+                right: 0px ;
+                text-align: center ;
+                top: 30% ;
+            }
+            div.m-app-loading h1 {
+                font-size: 26px ;
+                line-height: 35px ;
+                margin: 0px 0px 20px 0px ;
+            }
+            div.m-app-loading p {
+                font-size: 18px ;
+                line-height: 14px ;
+                margin: 0px 0px 0px 0px ;
+            }
+        </style>
+
+
+        <!-- BEGIN: Actual animated container. -->
+        <div class="animated-container">
+            <div class="messaging">
+                <span class="color-orange ng-scope" ng-if="development_env" style="font-size:48px;font-weight:bold;"> 
+                    <img src="https://absch.cbd.int/app/img/cbd-logo-green-en.svg" style="height:80px;">
+                </span>
+               
+                <h1>
+                 <br>
+                   <span class="color-black">loading the <br>ABS Clearing-House   </span>
+                   <br> version <%=appVersion%>
+                   <br> <br>
+                    <i class="fa fa-spin fa-3x fa-circle-o-notch"></i> 
+                </h1>
+            </div>
+        </div>
+        <!-- END: Actual animated container. -->
+
+    </div>
+    <iframe   id="authenticationFrame" style="display:none"></iframe>
+    <script>
+
+        var domain = document.location.hostname.replace(/[^\.]+\./, '');
+
+         if(domain=='localhost') domain = 'cbddev.xyz';
+
+        document.getElementById('authenticationFrame').src = 'https://accounts.'+domain+'/app/authorize.html';
+
+    </script>
+    <div class="alert alert-info alert-dismissible lang-alert" ng-if="lang!='en'" style="margin-bottom:1px">
+        <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
+         <strong>Please note that the translation of the ABS Clearing-House is in progress.</strong>
+    </div>
+
+    <div class="device-size visible-xs" size="xs" style="height:0px;width:0px"></div>
+    <div class="device-size visible-sm" size="sm" style="height:0px;width:0px"></div>
+    <div class="device-size visible-md" size="md" style="height:0px;width:0px"></div>
+    <div class="device-size visible-lg" size="lg" style="height:0px;width:0px"></div>
+    <div id="divHeader"></div>
+
+    <div class="container-full page-content" style="min-height:1000px;" ng-class="{'training-bg':!production_env}">
+        <ng-view autoscroll="true"></ng-view>
+    </div>
+
+    <div class="footer">
+            <div class="footer-page" >
+                <div class="container-fluid footer-page-container">
+                    <a translation-url  href="#"  scroll-to="anchorTop" class="pull-right color-darkgrey"><i class="fa fa-arrow-circle-up"></i> back to top</a>
+                </div>
+            </div>
+    </div>
+    <div id="divFooter"></div>
+    
+
+    <!-- Bootstrap core JavaScript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+
+    <!-- Slaask. need to be placed just before require.JS script tag -->
+    <script src="https://cdn.slaask.com/chat.js"></script>
+    <script>
+        //patch slaask to works with requireJS
+        window._slaask.createScriptTag = function (url) {
+            var t = {};
+            require([url], function() { t.onload(); });
+            return t;
+        };
+    </script>
+
+    <script src="/app/libs/requirejs/require.js" data-main="/app/boot.js?v=<%=appVersion%>"></script>
+    <script>require(['templates/absch'])</script>
+    <script src="/app/libs/outdated-browser/outdatedbrowser/outdatedbrowser.min.js"></script>
+    <link rel="stylesheet" href="/app/libs/outdated-browser/outdatedbrowser/outdatedbrowser.min.css">
+    <div id="outdated"></div>
+
+    <link rel="stylesheet" href="/app/css/help-controls.css">
+    <link rel="stylesheet" type="text/css" href="/app/css/chm.css" >
+    <link rel="stylesheet" type="text/css" href="/app/css/colors.css" >
+    <link rel="stylesheet" type="text/css" href="/app/libs/font-awesome/css/font-awesome.min.css">
+    <link rel="stylesheet" type="text/css" href="/app/libs/bootstrap-datepicker/css/datepicker.css" >
+    <link rel="stylesheet" type="text/css" href="/app/libs/angular-loading-bar/src/loading-bar.css" >
+    <link rel="stylesheet" type="text/css" href="/app/libs/angular-toastr/dist/angular-toastr.min.css" />
+    <link rel="stylesheet" type="text/css" href="/app/css/km.css">
+    
+    <script async src='https://www.google-analytics.com/analytics.js'></script>
+    <script>
+        /**************************
+          For outdate browser check
+        **************************/
+        function addLoadEvent(func) {
+        var oldonload = window.onload; if (typeof window.onload != 'function') { window.onload = func; } else { window.onload = function() { if (oldonload) { oldonload(); } func(); } } }
+        addLoadEvent(function() { outdatedBrowser( { bgColor: '#f25648', color: '#ffffff', lowerThan: 'boxShadow', languagePath: 'app/libs/outdated-browser/outdatedbrowser/lang/en.html' }) });
+        addLoadEvent(function() {
+            var langARRegex = /^\/ar\//;
+            var location = window.location;
+            if(langARRegex.test(location.pathname)){
+             document.getElementsByTagName("body")[0].setAttribute("dir", "rtl");   
+            }
+
+        });
+        if(domain == 'cbd.int'){
+            window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+            ga('create', 'UA-1996573-11', 'auto');
+            ga('set',    'hostname', window.location.hostname);
+            ga('set',    'location', undefined);
+        }
+
+        window.clearingHouseHost = '<%=clearingHouseHost%>';
+        window.appVersion = document.documentElement.attributes['app-version'].value;
+        window.lang = '<%=baseUrl%>'//.replace('/','')
+    </script>
+
+</body>
+
+</html>

@@ -1,0 +1,10 @@
+﻿<div >
+    <table class="table">
+        <tr ng-repeat="schema in country.schemas">
+            <td>
+                <span class="badge">{{schema.count}}</span>
+            </td>
+            <td>{{schema.title|lstring:locale}}</td>
+        </tr>
+    </table>
+</div>

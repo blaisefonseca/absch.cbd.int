@@ -1,6 +1,6 @@
 ﻿define(['app', 'text!views/forms/view/record-loader.directive.html', 
-	'scbd-angularjs-services', 'ngSmoothScroll',
-	'scbd-angularjs-filters',
+	'components/scbd-angularjs-services/services/main', 'ngSmoothScroll',
+	'components/scbd-angularjs-services/filters/scbd-filters',
 	'./view-history-directive',
     'js/common',
     'views/directives/document-metadata-directive',
@@ -10,8 +10,8 @@
     'views/forms/view/view-contact-reference.directive',
 	'services/search-service',
 	'views/directives/block-region-directive',
-	'views/directives/record-options','scbd-angularjs-services/locale',
-	'views/forms/directives/document-date'
+	'views/directives/record-options','components/scbd-angularjs-services/services/locale',
+	'views/forms/directives/document-date', 'components/scbd-angularjs-controls/form-control-directives/km-value-ml'
 ], function (app, template) {
 
 	app.directive('recordLoader', [function () {
@@ -49,28 +49,42 @@
 						$scope.locale = appLocale;
 					
 					var schemaMapping = {
-						news: 'views/forms/view/view-news.directive',
-						absnationalreport: 'views/forms/view/view-abs-national-report.directive',
-						abscheckpoint: 'views/forms/view/view-abs-checkpoint.directive',
-						abscheckpointcommunique: 'views/forms/view/view-abs-checkpoint-communique.directive',
-						abspermit: 'views/forms/view/view-abs-permit.directive',
-						authority: 'views/forms/view/view-authority.directive',
-						authorityreference: 'views/forms/view/view-authority-reference.directive',
-						contact: 'views/forms/view/view-contact.directive',
-						contactreference: 'views/forms/view/view-contact-reference.directive',
-						database: 'views/forms/view/view-database.directive',
-						measure: 'views/forms/view/view-measure.directive',
-						organization: 'views/forms/view/view-organization.directive',
-						organizationreference: 'views/forms/view/view-organization-reference.directive',
-						resource: 'views/forms/view/view-resource.directive',
-						focalpoint: 'views/forms/view/view-focalpoint.directive',
-						meeting: 'views/forms/view/view-meeting.directive',
-						statement: 'views/forms/view/view-statement.directive',
-						pressrelease: 'views/forms/view/view-pressrelease.directive',
-						new: 'views/forms/view/view-new.directive',
-						notification: 'views/forms/view/view-notification.directive',
-						capacitybuildinginitiative: 'views/forms/view/view-capacity-building-initiative.directive',
-						capacitybuildingresource: 'views/forms/view/view-capacity-building-resource.directive'
+
+						absNationalReport			: 'views/forms/view/abs/view-abs-national-report.directive',
+						absCheckpoint				: 'views/forms/view/abs/view-abs-checkpoint.directive',
+						absCheckpointCommunique		: 'views/forms/view/abs/view-abs-checkpoint-communique.directive',
+						absPermit					: 'views/forms/view/abs/view-abs-permit.directive',
+						authorityreference			: 'views/forms/view/abs/view-authority-reference.directive',
+						measure						: 'views/forms/view/abs/view-measure.directive',						
+						capacityBuildingInitiative	: 'views/forms/view/abs/view-capacity-building-initiative.directive',
+						capacityBuildingResource	: 'views/forms/view/abs/view-capacity-building-resource.directive',
+
+						contact						: 'views/forms/view/view-contact.directive',
+						contactreference			: 'views/forms/view/view-contact-reference.directive',
+						authority					: 'views/forms/view/view-authority.directive',
+						database					: 'views/forms/view/view-database.directive',						
+						organization				: 'views/forms/view/view-organization.directive',
+						organizationreference		: 'views/forms/view/view-organization-reference.directive',
+						resource					: 'views/forms/view/view-resource.directive',
+
+						focalPoint					: 'views/forms/view/scbd/view-focalpoint.directive',
+						meeting						: 'views/forms/view/scbd/view-meeting.directive',
+						statement					: 'views/forms/view/scbd/view-statement.directive',
+						pressRelease				: 'views/forms/view/scbd/view-pressrelease.directive',
+						new							: 'views/forms/view/scbd/view-new.directive',
+						notification				: 'views/forms/view/scbd/view-notification.directive',
+						news						: 'views/forms/view/scbd/view-news.directive',
+
+						"biosafteyLaw" 				: 'views/forms/view/bch/view-law.directive',
+						"decision" 					: 'views/forms/view/bch/view-decision.directive',
+						"riskAssessment" 			: 'views/forms/view/bch/view-risk-assessment.directive',
+						"cpbNationalReport3" 		: 'views/forms/view/bch/view-national-report3.directive',
+						"expert" 					: 'views/forms/view/bch/view-expert.directive',
+						"expertAssignment" 			: 'views/forms/view/bch/view-expert-assignment.directive',
+						"riskAssessment" 			: 'views/forms/view/bch/view-risk-assessment.directive',
+						"modifiedOrganism" 			: 'views/forms/view/bch/view-lmo.directive',
+						"dnaSequence" 				: 'views/forms/view/bch/view-dna-sequence.directive',
+						"organism" 					: 'views/forms/view/bch/view-organism.directive'
 					}
 
 					$scope.$watch("document", function (_new) {
@@ -111,7 +125,7 @@
 						if ($route.current.params.documentNumber)
 							var documentID = $route.current.params.documentNumber;
 
-						if (documentID && documentID.toLowerCase().indexOf('absch') == 0) {
+						if (documentID && (/^bch/i.test(documentID) || /^abs/i.test(documentID))) {
 							var docNum = documentID.split('-');
 							if (docNum.length == 5) {
 								documentID = documentID.toLowerCase();//.replace('absch','ABSCH');
@@ -341,7 +355,7 @@
 						else if (_.contains(["NFP", "ST", "NT", "MT", "PR", "MTD"], lschema.toUpperCase()))
 							lschema = $filter("mapSchema")(lschema);
 
-						var schemaDetails = schemaMapping[lschema.toLowerCase()];
+						var schemaDetails = schemaMapping[lschema];
 
 						require([schemaDetails], function () {
 							var name = snake_case(lschema);

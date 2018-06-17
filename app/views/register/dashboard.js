@@ -1,19 +1,23 @@
-define(['app', 'underscore',
+define(['app', 'underscore', 'angular', 
  'services/role-service', 'services/app-config-service',
- 'views/register/user-preferences/user-preference-filter',
- 'views/register/directives/register-top-menu', 'toastr','scbd-angularjs-services'],
-function(app, _) {
+ 'views/register/directives/register-top-menu', 'toastr','components/scbd-angularjs-services/services/main', 'views/register/directives/top-records'],
+function(app, _, ng) {
     "use strict";
-    app.controller("DashboardController", ["$rootScope", "$scope", "IStorage", "roleService", "$compile", "realm", "$q",
-                    "$routeParams", '$location', "$filter", "$http", "$element","$timeout", 'toastr', 'appConfigService',
+    return ["$rootScope", "$scope", "IStorage", "roleService", "$compile", "realm", "$q",
+                    "$routeParams", '$location', "$filter", "$http", "$timeout", 'toastr', 'appConfigService',
                     'IWorkflows',
         function($rootScope, $scope, storage, roleService, $compile, realm, $q, $routeParams, 
-                $location, $filter, $http, $element, $timeout, toastr, appConfigService, IWorkflows) {
+                $location, $filter, $http, $timeout, toastr, appConfigService, IWorkflows) {
+
+            $scope.nationalSchemas = _.without(appConfigService.nationalSchemas, 'contact');
+            $scope.referenceSchemas = _.without(appConfigService.referenceSchemas, 'capacityBuildingResource');
+            $scope.topRecords = {};
+            $scope.user = $rootScope.user;
 
             var schemaFacets = {};
 
             $timeout(function(){
-                $element.find('[data-toggle="tooltip"]').tooltip();                
+                ng.element('ng-view').find('[data-toggle="tooltip"]').tooltip();                
             },50);
 
 
@@ -22,10 +26,9 @@ function(app, _) {
                 return $scope.dashboardFilter == filter || $scope.dashboardFilter == "All";
             }
 
-            $scope.user = $rootScope.user;
-
             if ($scope.user.isAuthenticated) {
                 $scope.roles = {
+                    is                       : roleService.is.bind(roleService),
                     isAbsPublishingAuthority : roleService.isAbsPublishingAuthority(),
                     isAbsNationalFocalPoint  : roleService.isAbsNationalFocalPoint(),
                     isAbsAdministrator       : roleService.isAbsAdministrator(),
@@ -39,6 +42,11 @@ function(app, _) {
 
             }
 
+
+            $scope.showTopRecords = function($event, schema) {
+                $event.stopPropagation();
+                $scope.topRecords[schema] = !$scope.topRecords[schema];
+            }
 
             $scope.gotoNew = function($event, cftype) {
                 $event.stopPropagation();
@@ -139,5 +147,5 @@ function(app, _) {
                 }
             init();
         }
-    ]);
+    ];
 });

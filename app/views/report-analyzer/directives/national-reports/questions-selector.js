@@ -1,5 +1,5 @@
 define(['text!./questions-selector.html', 'app', 'lodash', 'require', '../selectors/terms-dialog', '../intermediate', 
-'scbd-angularjs-services/locale', 'js/common'], 
+'components/scbd-angularjs-services/services/locale', 'js/common'], 
 function(templateHtml, app, _, require) {
 
     var baseUrl = require.toUrl('').replace(/\?v=.*$/,'');
@@ -16,7 +16,8 @@ function(templateHtml, app, _, require) {
     //
     //
     //==============================================
-    app.directive('nationalReportQuestionsSelector', ['$http', 'locale', 'commonjs', '$q', function($http, locale, commonjs, $q) {
+    app.directive('nationalReportQuestionsSelector', ['$http', 'locale', 'commonjs', '$q', '$timeout', 'realm',
+     function($http, locale, commonjs, $q, $timeout, realm) {
         return {
             restrict : 'E',
             replace : true,
@@ -26,18 +27,20 @@ function(templateHtml, app, _, require) {
                 selectedQuestions : '=questions',
                 selectedRegions : '=regions',
                 selectedRegionsPreset : '=regionsPreset',
-                selectedRegionsPresetFilter : '=regionsPresetFilter'
+                selectedRegionsPresetFilter : '=regionsPresetFilter',
+                reportData  : '=reportData'
             },
             link: function ($scope) {
-
-                $scope.selectedReportType = $scope.selectedReportType || 'npInterimNationalReport1';
+                
+                $scope.selectedReportType = $scope.selectedReportType || $scope.reportData[0].type;
+                
                 $scope.selectedRegions    = $scope.selectedRegions    || DefaultRegions.concat();
                 $scope.allSelected = true;
                 $scope.regionsMap = {};
 
                 getRegions();
                 getCountries();
-                mapNPParties();
+                mapProtocolParties();
                 ///////////////////////////////////////
                 // REPORT TYPE
                 ///////////////////////////////////////
@@ -60,23 +63,26 @@ function(templateHtml, app, _, require) {
                 //====================================
                 $scope.$watch('selectedReportType', function (reportType) {
 
-                    if(!reportType)
+                    if(!reportType || !$scope.reportData)
                         return;
+                    
+                    var reportTypeDetails = _.find($scope.reportData, {type:reportType});    
+                    require(['json!'+baseUrl+reportTypeDetails.questionsUrl], function(res){
 
-                    require(['json!'+baseUrl+'app-data/report-analyzer/'+reportType+'.json'], function(res){
+                        $timeout(function(){
+                            $scope.sections = res;
 
-                        $scope.sections = res;
+                            if($scope.selectedQuestions) {
 
-                        if($scope.selectedQuestions) {
+                                setSelectedQuestions();
 
-                            setSelectedQuestions();
+                            } else {
 
-                        } else {
+                                $scope.allSelected = true;
+                                $scope.allSectionsClicked();
 
-                            $scope.allSelected = true;
-                            $scope.allSectionsClicked();
-
-                        }
+                            }
+                        }, 100);
                     });
                 });
 
@@ -90,7 +96,7 @@ function(templateHtml, app, _, require) {
                 //====================================
                 $scope.$watchCollection('selectedRegions', function() {
                     // console.log( $scope.selectedRegionsPreset)
-                    if(_.includes(['npParties', 'npNonParties'], $scope.selectedRegionsPreset))
+                    if(_.includes(['protocolParties', 'protocolNonParties'], $scope.selectedRegionsPreset))
                         return;
 
                     $scope.selectedRegions = $scope.selectedRegions || DefaultRegions.concat();
@@ -125,18 +131,18 @@ function(templateHtml, app, _, require) {
 
                     var preset = $scope.selectedRegionsPreset;
                     $scope.selectedRegionsPresetFilter = [];
-                    if(preset=="cbdRegions" || preset=="npParties" || preset=="npNonParties") { $scope.selectedRegions = DefaultRegions.concat(); }
+                    if(preset=="cbdRegions" || preset=="protocolParties" || preset=="protocolNonParties") { $scope.selectedRegions = DefaultRegions.concat(); }
                     if(preset=="countries")  { $scope.selectedRegions = []; $scope.showCountries = true; }
                     if(preset=="regions")    { $scope.selectedRegions = []; $scope.showRegions = true; }
-                    if(preset=="npParties")  { 
-                        _.each(_.sortBy(_.values($scope.npCountries), "title."+locale), function(country){
-                            if(country.isNPParty)
+                    if(preset=="protocolParties")  { 
+                        _.each(_.sortBy(_.values($scope.protocolCountries), "title."+locale), function(country){
+                            if(country.isProtocolParty)
                                 $scope.selectedRegionsPresetFilter.push(country.code)
                         }); 
                     }
-                    if(preset=="npNonParties")  { 
-                        _.each(_.sortBy(_.values($scope.npCountries), "title."+locale), function(country){
-                            if(!country.isNPParty)
+                    if(preset=="protocolNonParties")  { 
+                        _.each(_.sortBy(_.values($scope.protocolCountries), "title."+locale), function(country){
+                            if(!country.isProtocolParty)
                                 $scope.selectedRegionsPresetFilter.push(country.code)
                         }); 
                     }
@@ -200,14 +206,14 @@ function(templateHtml, app, _, require) {
                 //
                 //
                 //====================================
-                function mapNPParties() {
+                function mapProtocolParties() {
                     
                    $q.when(commonjs.getCountries())
                    .then(function(data){
-                       $scope.npCountries = [];
+                       $scope.protocolCountries = [];
                        _.each(data, function(country){
-                            $scope.npCountries[country.code.toLowerCase()] = {
-                                title : country.name, isNPParty : country.isNPParty, code : country.code.toLowerCase()
+                            $scope.protocolCountries[country.code.toLowerCase()] = {
+                                title : country.name, isProtocolParty : country.isAppProtocolParty, code : country.code.toLowerCase()
                             }
                        });
                    })

@@ -1,7 +1,6 @@
 ﻿'use strict';
 
-window.name = 'NG_DEFER_BOOTSTRAP!';
-if(/Safari/.test(navigator.userAgent)) { if(!console.log)console.log = function(){}; }
+if(/Safari/.test(navigator.userAgent) && !/Chrome/i.test(navigator.userAgent)) { console.log = function(){}; }
 
 require.config({
     waitSeconds: 120,
@@ -27,9 +26,9 @@ require.config({
         'lodash'                    : 'libs/lodash/lodash.min',
         'moment'                    : 'libs/momentjs/min/moment-with-langs.min',
         'angular-animate'           : 'libs/angular-animate/angular-animate.min',
-        'view-abs-checkpoint'       : 'views/forms/view/view-abs-checkpoint.directive',
+        'view-abs-checkpoint'       : 'views/forms/view/abs/view-abs-checkpoint.directive',
         'text-angular-sanitize'     : 'libs/textAngular/dist/textAngular-sanitize.min',
-        'text-angular'              : 'libs/textAngular/dist/textAngular.min',
+        'text-angular'              : 'libs/textAngular/src/textAngular',
         'cbd-forums'                : 'libs/cbd-forums/cbd-forums',
         'angular-flex'              : 'libs/angular-flex/angular-flex',
         'ng-breadcrumbs'            : 'libs/ng-breadcrumbs/dist/ng-breadcrumbs.min',
@@ -75,14 +74,17 @@ require.config({
         'angular-loading-bar'           : { 'deps': ['angular']},
         'introjs'                       : { 'exports': 'introJs'},
         'angular-introjs'               : { 'deps':['angular', 'introjs']},
-        'angular-localizer'             : { 'deps':['angular']},
+        'angular-localizer'             : { 'deps':['angular', 'angular-cookies']},
         'jqvmap'                        : { 'deps': ['jquery'] },
         'text-angular'                  : { 'deps': ['text-angular-sanitize', 'angular'] },
         'text-angular-sanitize'         : { 'deps': ['angular', 'angular-sanitize']},
         'cbd-forums'                    : { 'deps': ['angular', 'bootstrap']},
         'ngStorage'                     : { 'deps': ['angular'] },
+        'ngInfiniteScroll'              : { 'deps': ['angular'] },
         'angular-flex'                  : { 'deps': ['angular'] },
         'ng-breadcrumbs'                : { 'deps': ['angular'] },
+        'ngSmoothScroll'                : { 'deps': ['angular'] },
+        'angular-joyride'               : { 'deps': ['angular', 'angular-animate'] },
         'scbd-angularjs-services'       : { 'deps': ['angular']},
         'scbd-angularjs-filters'        : { 'deps': ['angular']},
         'scbd-angularjs-controls'       : { 'deps': ['angular', 'angular-sanitize', 'angular-localizer']},
@@ -104,13 +106,6 @@ require.config({
         'pdfjs-dist/build/pdf'          : { 'deps': ['angular']}, 
         'pdf-object'                    : { 'deps': ['angular']}  
     },
-    packages: [
-        { name: 'scbd-branding'          , location : 'components/scbd-branding' },
-        { name: 'scbd-angularjs-controls', location : 'components/scbd-angularjs-controls/form-control-directives', main : 'all-controls.js' },
-        { name: 'scbd-angularjs-services', location : 'components/scbd-angularjs-services/services' },
-        { name: 'scbd-angularjs-filters',  location : 'components/scbd-angularjs-services/filters' },
-        { name: 'ammap', main: 'ammap',    location : 'libs/ammap3/ammap' }
-    ],
     urlArgs: function(id, url){
         
         if(url.indexOf('worldEUHigh.js')>0)
@@ -122,15 +117,21 @@ require.config({
 
 define("_slaask", window._slaask);
 
-require(['angular', 'angular-flex', 'angular-route', 'angular-cookies',  'bootstrap', 'domReady'], function (ng) {
-    // NOTE: place operations that need to initialize prior to app start here using the `run` function on the top-level module
+//==================================================
+// Protect window.console method calls, e.g. console is not defined on IE
+// unless dev tools are open, and IE doesn't define console.debug
+//==================================================
+(function fixIEConsole() { 'use strict';
 
-    require(['domReady!', 'app_routes', 'template'], function (document) {
-        ng.bootstrap(document, ['app']);
-        try {
-        ng.resumeBootstrap();
-        } catch(err) {
-          console.log('err', err);
-        }
-    });
-});
+    if (!window.console) {
+        window.console = {};
+    }
+
+    var methods = ["log", "info", "warn", "error", "debug", "trace", "dir", "group","groupCollapsed", "groupEnd", "time", "timeEnd", "profile", "profileEnd", "dirxml", "assert", "count", "markTimeline", "timeStamp", "clear"];
+    var noop    = function() {};
+
+    for(var i = 0; i < methods.length; i++) {
+        if (!window.console[methods[i]])
+            window.console[methods[i]] = noop;
+    }
+})();

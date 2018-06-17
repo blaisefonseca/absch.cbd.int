@@ -1,4 +1,6 @@
-'use strict';
+'use strict'; // jshint browser: false, node: true, esnext: true
+
+process.env.CLEARINGHOUSE = process.env.CLEARINGHOUSE || 'absch';
 
 // Create HTTP server and proxy
 
@@ -46,19 +48,27 @@ app.get('(/?:lang(ar|en|es|fr|ru|zh))?/*', function (req, res) {
    res.setHeader('Cache-Control', 'public, max-age=0');
    
    res.cookie('VERSION', appVersion);
-   req.url = '/template.ejs';
+   req.url = `/templates/${process.env.CLEARINGHOUSE}.ejs`;
+
+    let clearingHouseHost = process.env.CLEARINGHOUSE_HOST || req.hostname;
+    
+    if(!process.env.CLEARINGHOUSE_HOST && /^localhost/i.test(req.hostname)) {
+        clearingHouseHost = `${process.env.CLEARINGHOUSE.toLowerCase()}.cbddev.xyz`;
+    }
+
    co(function*(){
 
         var preferredLang = getPreferredLanguage(req);
         var langFilepath = yield getLanguageFile(req, preferredLang);
-        var options = { baseUrl: urlPreferredLang || (req.headers.base_url ||  (preferredLang ? ('/'+preferredLang+'/') : '/')), 'appVersion' : appVersion };
+        var options = { baseUrl: urlPreferredLang || (req.headers.base_url ||  (preferredLang ? ('/'+preferredLang+'/') : '/')),
+                        'appVersion' : appVersion, clearingHouseHost : clearingHouseHost};
         
         if(langFilepath){
              return res.render(langFilepath, options);
         } 
 
-        return res.render(__dirname + '/app/template.ejs', options);
-    })
+        return res.render(__dirname + `/app/templates/${process.env.CLEARINGHOUSE}.ejs`, options);
+    });
 });
 
 // Start server

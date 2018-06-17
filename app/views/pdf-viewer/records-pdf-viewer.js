@@ -1,4 +1,4 @@
-﻿define(['app', 'pdf-object', 'scbd-angularjs-services/locale'], function (app, pdfObject) {
+﻿define(['app', 'pdf-object', 'components/scbd-angularjs-services/services/locale'], function (app, pdfObject) {
     app
     .directive( 'elemReady', function( $parse ) {
         return {
@@ -73,7 +73,7 @@
                                  .replace("{{revision}}", $route.current.params.revision)
                                  .replace("{{schema}}", $route.current.params.schema);
         }
-        $scope.loadLangPdf('en')
+        $scope.loadLangPdf(locale||'en')
     }])
 
 })

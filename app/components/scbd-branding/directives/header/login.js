@@ -2,10 +2,10 @@ define(['app',
     'text!./login.html',
     'jquery',
     'css!./login',
-    'scbd-angularjs-services/authentication',
+    'components/scbd-angularjs-services/services/authentication',
 ], function (app,template,$) {
 
-app.directive('loginAccount', function ($http) {
+app.directive('loginAccount', [function() {
         return {
             restrict: 'E',
             template: template,
@@ -65,5 +65,5 @@ app.directive('loginAccount', function ($http) {
             }]
 
         };
-    });
+    }]);
 });
